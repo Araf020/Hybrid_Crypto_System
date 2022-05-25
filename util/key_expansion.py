@@ -115,33 +115,33 @@ def key_expansion(word_list, round):
       
     return roundkey
 
-
-# word = [BitVector(intVal = 0x67), BitVector(intVal = 0x20), BitVector(intVal = 0x46), BitVector(intVal = 0x75)]
-
-# # print(word)
-
-# word = g_function(word, 1)
-
-
+# key is list of bitvector elements of size 8
+def get_round_key(key, round):
+    
+    word_list = bitvector_list2matrix(key)
+    round_key = key_expansion(word_list, round)
+    return round_key
 
 
-# # print_list(word)
+def demo():
+    
+    key = [BitVector(hexstring="54"),BitVector(hexstring="68"),BitVector(hexstring="61"),BitVector(hexstring="74"),BitVector(hexstring="73"),BitVector(hexstring="20"),BitVector(hexstring="6D"),BitVector(hexstring="79"),BitVector(hexstring="20"),BitVector(hexstring="4B"),BitVector(hexstring="75"),BitVector(hexstring="6E"),BitVector(hexstring="67"),BitVector(hexstring="20"),BitVector(hexstring="46"),BitVector(hexstring="75")]
 
-key = [BitVector(hexstring="54"),BitVector(hexstring="68"),BitVector(hexstring="61"),BitVector(hexstring="74"),BitVector(hexstring="73"),BitVector(hexstring="20"),BitVector(hexstring="6D"),BitVector(hexstring="79"),BitVector(hexstring="20"),BitVector(hexstring="4B"),BitVector(hexstring="75"),BitVector(hexstring="6E"),BitVector(hexstring="67"),BitVector(hexstring="20"),BitVector(hexstring="46"),BitVector(hexstring="75")]
+    ek = bitvector_list2matrix(key)
 
-ek = bitvector_list2matrix(key)
+    # ek = key_expansion(w_l,1)
+    # print("after expansion of round: ", 1)
+    # print_matrix(ek)
 
-# ek = key_expansion(w_l,1)
-# print("after expansion of round: ", 1)
-# print_matrix(ek)
+    # ek = key_expansion(ek,2)
+    # print("after expansion of round: ", 2)
+    # print_matrix(ek)
 
-# ek = key_expansion(ek,2)
-# print("after expansion of round: ", 2)
-# print_matrix(ek)
+    for i in range(10):
+        ek = key_expansion(ek,i+1)
+        print("after expansion of round: ", i+1)
+        print_matrix(ek)
+        print()
 
-for i in range(10):
-    ek = key_expansion(ek,i+1)
-    print("after expansion of round: ", i+1)
-    print_matrix(ek)
-    print()
 
+# demo()
