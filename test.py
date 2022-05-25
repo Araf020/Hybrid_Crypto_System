@@ -42,16 +42,20 @@ def print_list(word):
         
     print()
 
-def g_function(word, round):
+
+def g_function(word1, round):
         
     # shift left  circularly
-    w_0 = word[0]
 
-    word[0] = word[1]
-    word[1] = word[2]
-    word[2] = word[3]
-    word[3] = w_0
-    print_list(word)
+    word = []
+    
+    w_0 = word1[0]
+
+    word.append(word1[1])
+    word.append(word1[2])
+    word.append(word1[3])
+    word.append(w_0)
+    # print_list(word)
 
     # substitute with S-box
     for i in range(4):
@@ -69,33 +73,74 @@ def g_function(word, round):
     return word
 
 
+def xor_two_word(word1, word2):
 
-def key_expansion(key):
-    # make a list of 4 elements from key
+    word = []
+
+    for i in range(4):
+        word.append(BitVector(intVal = word1[i].int_val() ^ word2[i].int_val(), size = 8))
+    
+    return word
+
+def bitvector_list2matrix(key):
     word_list = []
     for i in range(4):
         word_list.append(key[i*4:i*4+4])
-   
+    
+    return word_list
+
+def key_expansion(word_list, round):
+    # make a list of 4 elements from key
+    # word_list = []
+    # for i in range(4):
+    #     word_list.append(key[i*4:i*4+4])
+    
+    # w_3 = word_list[3].deep_copy()
+    print("before expansion of round: ", round)
+    print_matrix(word_list)
+
+    w_4 = xor_two_word(word_list[0], g_function(word_list[3], round))
+    w_5 = xor_two_word(word_list[1], w_4)
+    w_6 = xor_two_word(word_list[2], w_5)
+
+    
+
+    w_7 = xor_two_word( w_6,word_list[3])
+    
    
 
-        
-    
-    
+
+    roundkey = [w_4, w_5, w_6, w_7]
       
-    return key
+    return roundkey
 
 
-word = [BitVector(intVal = 0x67), BitVector(intVal = 0x20), BitVector(intVal = 0x46), BitVector(intVal = 0x75)]
+# word = [BitVector(intVal = 0x67), BitVector(intVal = 0x20), BitVector(intVal = 0x46), BitVector(intVal = 0x75)]
 
-# print(word)
+# # print(word)
 
-word = g_function(word, 1)
-
-
+# word = g_function(word, 1)
 
 
-print_list(word)
+
+
+# # print_list(word)
 
 key = [BitVector(hexstring="54"),BitVector(hexstring="68"),BitVector(hexstring="61"),BitVector(hexstring="74"),BitVector(hexstring="73"),BitVector(hexstring="20"),BitVector(hexstring="6D"),BitVector(hexstring="79"),BitVector(hexstring="20"),BitVector(hexstring="4B"),BitVector(hexstring="75"),BitVector(hexstring="6E"),BitVector(hexstring="67"),BitVector(hexstring="20"),BitVector(hexstring="46"),BitVector(hexstring="75")]
 
-print_list(key_expansion(key))
+ek = bitvector_list2matrix(key)
+
+# ek = key_expansion(w_l,1)
+# print("after expansion of round: ", 1)
+# print_matrix(ek)
+
+# ek = key_expansion(ek,2)
+# print("after expansion of round: ", 2)
+# print_matrix(ek)
+
+for i in range(10):
+    ek = key_expansion(ek,i+1)
+    print("after expansion of round: ", i+1)
+    print_matrix(ek)
+    print()
+
