@@ -78,11 +78,11 @@ print(bv)
     
 
 
-# b = BitVector(hexstring="4E")
+b = BitVector(hexstring="4E")
 
-# int_val = b.intValue()
-# print("int val: ", int_val)
-# s = Sbox[int_val]
+int_val = b.intValue()
+print("int val: ", int_val)
+s = Sbox[int_val]
 
 
 # s = BitVector(intVal=s, size=8)

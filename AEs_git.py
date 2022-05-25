@@ -275,6 +275,7 @@ class AES:
         plaintext = pad(plaintext)
 
         blocks = []
+        
         previous = iv
         for plaintext_block in split_blocks(plaintext):
             # CBC mode encrypt: encrypt(plaintext_block XOR previous)
