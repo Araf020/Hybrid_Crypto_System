@@ -1,4 +1,5 @@
 # implemenatation of AES
+from unittest import result
 from BitVector import *
 from util import key_expansion
 Sbox = (
@@ -74,9 +75,21 @@ Rcon = (
 #             w[i] = w[i-4] ^ w[i-1]
 #     return w
 
+def add_round_key(state, round_key):
+     
+     for i in range(4):
+         for j in range(4):
+             state[i][j] = state[i][j] ^ round_key[i][j]
 
+    
 def substitute_bytes(state):
-    return [BitVector(intVal=InvSbox[int(state[i], 2)], size=8) for i in range(16)]
+    for i in range(4):
+        for j in range(4):
+            sb=Sbox[state[i][j].int_val()]
+            # print("sub for ", state[i][j].get_bitvector_in_hex(), " is ", hex(sb))
+            state[i][j] = BitVector(intVal=sb, size = 8)  
+
+            # state[i][j] = BitVector(Intval = , size = 8)
     
 
 def shift_rows(state):
@@ -90,34 +103,121 @@ def inv_shift_rows(state):
     state[0][2], state[1][2], state[2][2], state[3][2] = state[2][2], state[3][2], state[0][2], state[1][2]
     state[0][3], state[1][3], state[2][3], state[3][3] = state[1][3], state[2][3], state[3][3], state[0][3]
 
+def multiply_two_matrix(a, b):
+    # declare a 2d list
+    result = [[0 for x in range(4)] for y in range(4)]
+    
+
+    for i in range(4):
+        for j in range(4):
+            # multiply each element of a row with each element of b column
+            # and add the result to the corresponding element of the result matrix
+            for k in range(4):
+                result[i][j] ^= a[i][k].int_val() * b[k][j].int_val()
+    
+    return result
 
 
-message = "This is a secret message"
+
+def mix_columns(state):
+    state= multiply_two_matrix(state, Mixer)
+    print("after mix columns ")
+    print_matrix(state)
+
+
+    # for i in range(4):
+    #     for j in range(4):
+            # state[i][j] = state[]
+
+
+def print_matrix(matrix):
+    for i in range(4):
+        for j in range(4):
+            print(matrix[i][j].get_bitvector_in_hex(), end=" ")
+        print()
+        
+    print()
+
+message = "Two One Nine Two"
 print("Message: ", message)
+
+key = "Thats my Kung Fu"
+print("Key: ", key)
+
 
 # read 16 bytes from the message
 message_in_bytes = message.encode('utf-8')
 message_in_bytes = message_in_bytes[:16]
+
+key_in_bytes = key.encode('utf-8')
+key_in_bytes = key_in_bytes[:16]
+key_in_bytes = list(key_in_bytes)
+# make every byte a bitvector
+key_in_bitvectors = [BitVector(intVal=byte, size=8) for byte in key_in_bytes]
+key_expansion.print_list(key_in_bitvectors)
+
+print("key in bytes: ", key_in_bytes)
+
 print("Message in bytes: ", message_in_bytes)
 # make it a array of bytes
 message_in_bytes = list(message_in_bytes)
-print("Message in bytes: ", message_in_bytes)
-# convert each byte to a character
-bytes_to_msg = [chr(i) for i in message_in_bytes]
-print("Message in bytes: ", bytes_to_msg)
+msg_in_bitvectors = [BitVector(intVal=byte, size=8) for byte in message_in_bytes]
+print("Message in bitvectors: ")
+key_expansion.print_list(msg_in_bitvectors)
 
-# converting this list to a matrix representation in column major order
-# this is the same as the matrix representation of the message
-# in the AES standard
-message_matrix = [bytes_to_msg[i:i+4] for i in range(0, len(bytes_to_msg), 4)]
-print("Message matrix: ", message_matrix)
+m_mat = key_expansion.bitvector_list2matrix(msg_in_bitvectors)
+print("Message in matrix: ")
+key_expansion.print_matrix(m_mat)
 
-# make each row to column
-message_matrix = [list(i) for i in zip(*message_matrix)]
+# make row to column
+m_mat = [list(i) for i in zip(*m_mat)]
+print("Message in column matrix: ")
+key_expansion.print_matrix(m_mat)
 
-print("Message matrix: ", message_matrix)
+key_mat = key_expansion.bitvector_list2matrix(key_in_bitvectors)
+print("Key in matrix: ")
+key_expansion.print_matrix(key_mat)
 
-# key_expansion.demo()
+# make row to column
+key_mat = [list(i) for i in zip(*key_mat)]
+print("Key in column matrix: ")
+key_expansion.print_matrix(key_mat)
+
+
+# add round key
+add_round_key(m_mat, key_mat)
+
+# print m_mat
+print("After add round key: ")
+key_expansion.print_matrix(m_mat)
+
+# substitute bytes
+substitute_bytes(m_mat)
+
+# print m_mat
+print("After substitute bytes: ")
+print_matrix(m_mat)
+
+mix_columns(m_mat)
+
+# for i in range(4):
+#     for j in range(4):
+#         print(hex(m_mat[i][j].int_val()), end=" ")
+#     print()
+# print_matrix(m_mat)
+# key_expansion.print_matrix(m_mat)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
