@@ -361,6 +361,8 @@ def str_to_bitevector_matrix(text):
 
 
 def get_list_of_roundKeys(key):
+    
+    # key_mat = str_to_bitevector_matrix(key)
     key_mat = str_to_bitevector_matrix(key)
     round_keys = []
     round_keys.append(key_mat)
@@ -439,7 +441,7 @@ def AES_encryption(key, message):
     # print("AES output after Round : ", 10)
     # print_matrix(m_mat)
 
-    return m_mat
+    return matrix_to_list(m_mat)
 
 
 
@@ -447,7 +449,6 @@ def AES_decryption(key, ciphertext):
 
     print("AES decryption")
     # in column order
-    # key_mat = str_to_bitevector_matrix(key)
     cipher_mat = list_to_bitvector_matrix(ciphertext)
   
 
@@ -523,12 +524,12 @@ def encryptDemo(key, message):
     
     """""Encryption"""
 
-    cipher = AES_encryption(key, message)
+    cipher_text = AES_encryption(key, message)
     # print("Cipher: ")
 
     # print_matrix(cipher)
 
-    cipher_text = matrix_to_list(cipher)
+    # cipher_text = matrix_to_list(cipher)
     print(cipher_text)
     # list of hex numbers to hex string
     cipher_string = ' '.join(map(lambda x: x, cipher_text))

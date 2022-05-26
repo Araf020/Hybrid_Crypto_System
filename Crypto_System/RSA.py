@@ -12,8 +12,8 @@ import prime
 
 
 # generate a number of given bit size
-def generate_number(k):
-    return random.getrandbits(k)
+# def generate_number(k):
+#     return random.getrandbits(k)
 
 # find modulus of exponent
 # It returns (x^y) % p
@@ -140,8 +140,8 @@ def get_key_pair(k):
 
     public_key, private_key = generate_keys(p,q)
 
-    print(public_key)
-    print(private_key)
+    # print(public_key)
+    # print(private_key)
 
     return public_key, private_key
 
