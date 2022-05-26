@@ -2,6 +2,7 @@
 from unittest import result
 from BitVector import *
 from util import key_expansion
+
 Sbox = (
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
     0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
@@ -63,17 +64,7 @@ Rcon = (
        )
 
 
-# key schedule
-# def key_schedule(key):
-#     w = [BitVector(size=128) for i in range(44)]
-#     for i in range(4):
-#         w[i] = key[i*4:i*4+4]
-#     for i in range(4, 44):
-#         if i%4 == 0:
-#             w[i] = w[i-4] ^ SubWord(RotWord(w[i-1])) ^ BitVector(intVal=RC[i//4])
-#         else:
-#             w[i] = w[i-4] ^ w[i-1]
-#     return w
+
 
 def add_round_key(state, round_key):
      
@@ -121,19 +112,8 @@ def shift_rows(state):
     return result
 
 
-def multiply_two_matrix(a, b):
-    # declare a 2d list
-    result = [[0 for x in range(4)] for y in range(4)]
-    
 
-    for i in range(4):
-        for j in range(4):
-            # multiply each element of a row with each element of b column
-            # and add the result to the corresponding element of the result matrix
-            for k in range(4):
-                result[i][j] ^= a[i][k].int_val() * b[k][j].int_val()
-    
-    return result
+
 
 
 
@@ -150,21 +130,21 @@ def mix_columns(state):
     for i in range(4):
         for j in range(4):
             for k in range(4):
-                # print("state_e ", state[k][i].get_bitvector_in_hex())
-                # print("Mixer ", Mixer[i][k].get_bitvector_in_hex())
+          
                 mul = state[k][j].gf_multiply_modular(Mixer[i][k], AES_modulus, 8)
-                # print("mul ", mul)
                 result_mat[i][j] ^= mul
-                # result_mat[i][j] ^= BitVector(intVal=multiply(state[k][i].int_val(), Mixer[i][k].int_val()), size=8)
-                # print("mul: " , mul)
-
+               
     return result_mat
 
 
     # for i in range(4):
     #     for j in range(4):
             # state[i][j] = state[]
-
+def print_list(lst):
+    for i in range(len(lst)):
+        print(lst[i].get_bitvector_in_hex(), end=" ")
+        
+    print()
 
 def print_matrix(matrix):
     for i in range(4):
@@ -195,6 +175,12 @@ def matrix_to_list(matrix):
     
     return result
 
+def bitvector_list2matrix(lst):
+    word_list = []
+    for i in range(4):
+        word_list.append(lst[i*4:i*4+4])
+    
+    return word_list
 
 def demo(message, key):
 
@@ -280,49 +266,35 @@ print("Message: ", message)
 key = "Thats my Kung Fu"
 print("Key: ", key)
 
+def convert_to_matrix(text):
+    text_in_bytes = text.encode('utf-8')
+    text_in_bytes = text_in_bytes[:16]
+    text_in_bytes = list(text_in_bytes)
+    text_in_bitvectors = [BitVector(intVal=byte, size=8) for byte in text_in_bytes]
+    text_in_matrix = bitvector_list2matrix(text_in_bitvectors)
+
+    text_in_matrix = [list(i) for i in zip(*text_in_matrix)]
+    
+    
+    return text_in_matrix
 
 
 def AES_encryption(key, message):
 
-    message_in_bytes = message.encode('utf-8')
-    message_in_bytes = message_in_bytes[:16]
+    # in column order 
+    key_mat = convert_to_matrix(key)
+    m_mat = convert_to_matrix(message)
 
-    key_in_bytes = key.encode('utf-8')
-    key_in_bytes = key_in_bytes[:16]
-    key_in_bytes = list(key_in_bytes)
-
-    # make every byte a bitvector
-    key_in_bitvectors = [BitVector(intVal=byte, size=8) for byte in key_in_bytes]
-    key_expansion.print_list(key_in_bitvectors)
-
-    print("key in bytes: ", key_in_bytes)
-
-    print("Message in bytes: ", message_in_bytes)
-    # make it a array of bytes
-    message_in_bytes = list(message_in_bytes)
-    msg_in_bitvectors = [BitVector(intVal=byte, size=8) for byte in message_in_bytes]
-    print("Message in bitvectors: ")
-    key_expansion.print_list(msg_in_bitvectors)
-
-    m_mat = key_expansion.bitvector_list2matrix(msg_in_bitvectors)
-    print("Message in matrix: ")
-    key_expansion.print_matrix(m_mat)
-
-    # make row to column
-    m_mat = [list(i) for i in zip(*m_mat)]
 
     print("Message in column matrix: ")
-    key_expansion.print_matrix(m_mat)
+    print_matrix(m_mat)
 
-    key_mat = key_expansion.bitvector_list2matrix(key_in_bitvectors)
-    print("Key in matrix: ")
-    key_expansion.print_matrix(key_mat)
-
-    # make row to column
-    key_mat = [list(i) for i in zip(*key_mat)]
     print("Key in column matrix: ")
-    key_expansion.print_matrix(key_mat)
+    print_matrix(key_mat)
 
+
+
+    '''============ First round ============='''
 
     # add round key
     add_round_key(m_mat, key_mat)
@@ -331,6 +303,7 @@ def AES_encryption(key, message):
     print("After add round key: ")
     key_expansion.print_matrix(m_mat)
 
+    """================9 More Rounds======================"""
     for round in range(1,10):
 
         # substitute bytes
@@ -373,6 +346,9 @@ def AES_encryption(key, message):
     return m_mat
 
 
+def AES_decryption(key, message):
+
+    print("AES decryption")
 
 
 
@@ -383,7 +359,10 @@ print("Cipher: ")
 print_matrix(cipher)
 
 cipher_text = matrix_to_list(cipher)
-key_expansion.print_list(cipher_text)
+print_list(cipher_text)
+
+
+
 
 
 
