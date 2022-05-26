@@ -39,7 +39,7 @@ def print_matrix(matrix):
 
 def print_list(word):
     for i in range(len(word)):
-        print(hex(word[i].int_val()), end=" ")
+        print(word[i].get_bitvector_in_hex(), end=" ")
         
     print()
 
@@ -122,6 +122,15 @@ def get_round_key(key, round):
     round_key = key_expansion(word_list, round)
     return round_key
 
+def get_the_round_key(key_mat, round):
+    
+    # making row to column
+    key_mat = [list(i) for i in zip(*key_mat)]
+    round_key = key_expansion(key_mat, round)
+
+    # making the row to column again using 
+    round_key = [list(i) for i in zip(*round_key)]
+    return round_key
 
 def demo():
     
@@ -144,4 +153,4 @@ def demo():
         print()
 
 
-# demo()
+demo()
