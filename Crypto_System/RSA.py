@@ -1,9 +1,7 @@
 # RSA encryption
 
-from os import getrandom
-import random
 import prime
-
+from Crypto.Util import number
 
 # python library to generate prime
 # print hello
@@ -136,6 +134,7 @@ def get_key_pair(k):
     
     p = prime.generate_nbit_prime(k//2)
     q = prime.generate_nbit_prime(k//2)
+    # p = number.getPrime(k//2)
     # p = number.getPrime(k//2)
 
     public_key, private_key = generate_keys(p,q)

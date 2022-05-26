@@ -374,6 +374,7 @@ def get_list_of_roundKeys(key):
 
 
 
+
 def AES_encryption(key, message):
 
     # in column order 
@@ -551,7 +552,7 @@ def encryptDemo(key, message):
 
 
 
-encryptDemo("Thats my Kung Fu", "Two One Nine Two")
+# encryptDemo("Thats my Kung Fu", "Two One Nine Two")
 
 
 
