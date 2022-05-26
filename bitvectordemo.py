@@ -88,13 +88,16 @@ s = Sbox[int_val]
 # s = BitVector(intVal=s, size=8)
 # print(s.get_bitvector_in_hex())
 
-# AES_modulus = BitVector(bitstring='100011011')
+AES_modulus = BitVector(bitstring='100011011')
 
-# bv1 = BitVector(hexstring="02")
+bv1 = BitVector(hexstring="02")
 
-# bv2 = BitVector(hexstring="63")
-# bv3 = bv1.gf_multiply_modular(bv2, AES_modulus, 8)
-# print(bv3)
+bv2 = BitVector(hexstring="63")
+bv3 = bv1.gf_multiply_modular(bv2, AES_modulus, 8)
+print("gf mul: ")
+
+print(bv3)
+print(bv3.get_bitvector_in_hex())
 
 # a_word = BitVector(textstring ="a")
 # print(a_word)

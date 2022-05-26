@@ -91,12 +91,34 @@ def substitute_bytes(state):
 
             # state[i][j] = BitVector(Intval = , size = 8)
     
+def shift_single_row_left_1(row):
+    
+    row[0], row[1], row[2], row[3] = row[1], row[2], row[3], row[0]
+
+
+def shift_single_row_left_2(row):
+    
+    shift_single_row_left_1(row)
+    shift_single_row_left_1(row)
+
+def shift_single_row_left_3(row):
+
+    shift_single_row_left_2(row)
+    shift_single_row_left_1(row)
+
+
 
 def shift_rows(state):
-    state[0][1], state[1][1], state[2][1], state[3][1] = state[1][1], state[2][1], state[3][1], state[0][1]
-    state[0][2], state[1][2], state[2][2], state[3][2] = state[2][2], state[3][2], state[0][2], state[1][2]
-    state[0][3], state[1][3], state[2][3], state[3][3] = state[3][3], state[0][3], state[1][3], state[2][3]
 
+    result=[]
+   
+    shift_single_row_left_1(state[1])
+    shift_single_row_left_2(state[2])
+    shift_single_row_left_3(state[3])
+        
+    result = [state[0], state[1], state[2], state[3]]
+
+    return result
 
 def inv_shift_rows(state):
     state[0][1], state[1][1], state[2][1], state[3][1] = state[3][1], state[0][1], state[1][1], state[2][1]
@@ -120,9 +142,27 @@ def multiply_two_matrix(a, b):
 
 
 def mix_columns(state):
-    state= multiply_two_matrix(state, Mixer)
-    print("after mix columns ")
-    print_matrix(state)
+
+    AES_modulus = BitVector(bitstring='100011011')
+    result_mat = [
+        [BitVector(intVal=0, size=8), BitVector(intVal=0, size=8), BitVector(intVal=0, size=8), BitVector(intVal=0, size=8)],
+        [BitVector(intVal=0, size=8), BitVector(intVal=0, size=8), BitVector(intVal=0, size=8), BitVector(intVal=0, size=8)],
+        [BitVector(intVal=0, size=8), BitVector(intVal=0, size=8), BitVector(intVal=0, size=8), BitVector(intVal=0, size=8)],
+        [BitVector(intVal=0, size=8), BitVector(intVal=0, size=8), BitVector(intVal=0, size=8), BitVector(intVal=0, size=8)]
+    ]
+
+    for i in range(4):
+        for j in range(4):
+            for k in range(4):
+                print("state_e ", state[k][i].get_bitvector_in_hex())
+                print("Mixer ", Mixer[i][k].get_bitvector_in_hex())
+                mul = state[k][i].gf_multiply_modular(Mixer[i][k], AES_modulus, 8)
+                print("mul ", mul)
+                result_mat[j][i] ^= mul
+                # result_mat[i][j] ^= BitVector(intVal=multiply(state[k][i].int_val(), Mixer[i][k].int_val()), size=8)
+                # print("mul: " , mul)
+
+    return result_mat
 
 
     # for i in range(4):
@@ -198,7 +238,13 @@ substitute_bytes(m_mat)
 print("After substitute bytes: ")
 print_matrix(m_mat)
 
-mix_columns(m_mat)
+m_mat = shift_rows(m_mat)
+
+print("After shift rows: ")
+print_matrix(m_mat)
+
+m_mat=mix_columns(m_mat)
+print_matrix(m_mat)
 
 # for i in range(4):
 #     for j in range(4):
