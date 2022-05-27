@@ -203,31 +203,3 @@ def demo():
 
 
 # demo()
-
-
-    
-
-
-
-
-    
-    
-
-    
-
-
-
-    
-
-
-
-# get_key_pair("hi",k, iterations)
-
-
-
-# print(generate_prime(bits=k/2,iterations=iterations))
-# print(generate_prime(bits=k/2,iterations=iterations))
- 
-
-
-
