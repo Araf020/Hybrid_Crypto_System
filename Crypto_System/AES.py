@@ -1,4 +1,5 @@
 # implemenatation of AES
+import time
 from unittest import result
 from BitVector import *
 import key_expansion
@@ -63,8 +64,7 @@ Rcon = (
 		0x1b, 0x36
        )
 
-
-
+report = {'scheduling':0, 'encrypt':0, 'decrypt':0}
 
 def add_round_key(state, round_key):
      
@@ -360,6 +360,7 @@ def str_to_bitevector_matrix(text):
     return text_in_matrix
 
 
+
 def get_list_of_roundKeys(key):
     
     # key_mat = str_to_bitevector_matrix(key)
@@ -378,8 +379,15 @@ def get_list_of_roundKeys(key):
 def AES_encryption(key, message):
 
     # in column order 
-    key_mat = str_to_bitevector_matrix(key)
+    # key_mat = str_to_bitevector_matrix(key)
     m_mat = str_to_bitevector_matrix(message)
+
+    # measure time for generating round keys
+    start_time = time.time()
+    round_keys = get_list_of_roundKeys(key)
+    # convert time to microseconds
+    key_time = (time.time() - start_time) * 1000
+    report["scheduling"] = key_time.__round__(2)
 
 
     # print("Message in column matrix: ")
@@ -389,12 +397,15 @@ def AES_encryption(key, message):
     # print_matrix(key_mat)
 
     
+    """measure encryption time"""
+    start_time = time.time()
+
 
 
     '''============ First round ============='''
 
     # add round key
-    add_round_key(m_mat, key_mat)
+    add_round_key(m_mat, round_keys[0])
 
     # print m_mat
     # print("After add round key: ")
@@ -421,13 +432,14 @@ def AES_encryption(key, message):
         # print("After mix columns: ")
         # print_matrix(m_mat)
 
-        key_mat=key_expansion.get_the_round_key(key_mat,round)
+        # key_mat=key_expansion.get_the_round_key(key_mat,round)
         
         # print("round key")
         # print_matrix(key_mat)
 
         # print("After add round key: ")
-        add_round_key(m_mat, key_mat)
+        # add_round_key(m_mat, key_mat)
+        add_round_key(m_mat, round_keys[round])
         # print("AES output after Round : ", round)
         # print_matrix(m_mat)
         # print_matrix(m_mat)
@@ -435,9 +447,15 @@ def AES_encryption(key, message):
     # final round
     substitute_bytes(m_mat)
     m_mat=shift_rows(m_mat)
-    key_mat=key_expansion.get_the_round_key(key_mat,10)
+    # key_mat=key_expansion.get_the_round_key(key_mat,10)
     
-    add_round_key(m_mat, key_mat)
+    # add_round_key(m_mat, key_mat)
+    add_round_key(m_mat, round_keys[10])
+
+    encrypt_time = (time.time() - start_time) * 1000 #miliseconds
+    report["encrypt"] = encrypt_time.__round__(2)
+
+
 
     # print("AES output after Round : ", 10)
     # print_matrix(m_mat)
@@ -448,13 +466,15 @@ def AES_encryption(key, message):
 
 def AES_decryption(key, ciphertext):
 
-    print("AES decryption")
+    # print("AES decryption")
     # in column order
     cipher_mat = list_to_bitvector_matrix(ciphertext)
   
 
     round_keys = get_list_of_roundKeys(key)
 
+
+    start_time = time.time()
    
 
     
@@ -510,50 +530,177 @@ def AES_decryption(key, ciphertext):
     # final round
     add_round_key(cipher_mat, round_keys[0])
 
+    decrypt_time = (time.time() - start_time) * 1000 #miliseconds
+    report["decrypt"] = decrypt_time.__round__(2)
+
     # print("AES decryption: ")
     # print_matrix(cipher_mat)
     return bitvector_matrix_to_text(cipher_mat)
 
 
+def pad(plaintext):
+    """
+    Pads the given plaintext with PKCS#7 padding to a multiple of 16 bytes.
+    Note that if the plaintext size is a multiple of 16,
+    a whole block will be added.
+    """
+    padding_len = 16 - (len(plaintext) % 16)
+    padding = bytes([padding_len] * padding_len)
+    return plaintext + padding
+
+def unpad(plaintext):
+    """
+    Removes a PKCS#7 padding, returning the unpadded text and ensuring the
+    padding was correct.
+    """
+    padding_len = plaintext[-1]
+    assert padding_len > 0
+    message, padding = plaintext[:-padding_len], plaintext[-padding_len:]
+    assert all(p == padding_len for p in padding)
+    return message
+
+def chunk_msg(msg):
+    
+    msg_chunks = []
+    for i in range(0, len(msg), 16):
+        msg_chunks.append(msg[i:i+16])
+    return msg_chunks
+
+
+def encrypt_file(key, filename):
+    # convert it to bytes
+    # file could be in any encoding
+    with open(filename, 'rb') as f:
+        plaintext = f.read()
+    # print("Original message: ", plaintext)
+    # pad it to a multiple of 16 bytes
+    plaintext = pad(plaintext)
+    # print("Padded message: ", plaintext)
+    # encrypt it
+    ciphers = encrypt_msg_not_multiple_16bytes(plaintext, key)
+    file = decrypt_msg_not_multiple_16bytes(ciphers, key)
+
+    
+
+
+    
+
+
+
+def encrypt_msg_not_multiple_16bytes(msg,key):
+
+    msg_p = pad(msg.encode('utf-8'))
+    
+    chunks = chunk_msg(msg_p)
+    ciphers = []
+    for chunk in chunks:
+        ciphers.append(AES_encryption(key, chunk.decode('utf-8')))
+    
+    return ciphers
+
+
+def decrypt_msg_not_multiple_16bytes(ciphers,dkey):
+    print("\ndecrypting msg.......................\n")
+    text = []
+    for cipher in ciphers:
+        text += (AES_decryption(dkey, cipher))
+    # text = AES.AES_decryption(key, cipher)
+    # print("msg decryption done!")
+    text = ''.join(text)
+    text = unpad(text.encode('utf-8')).decode('utf-8')
+    return text
+
+def convert_hex_to_ascii(list_hex):
+    # convert hex string to integer
+    # list_int = [int(i, 16) for i in list_hex]
+    ascii_v = [chr(int(i,16)) for i in list_hex]
+    ascii_v = ''.join(ascii_v)
+    return ascii_v
+
+
+
+def convert_ascii_to_hex(text):
+    text = list(text)
+    text = [hex(ord(i)) for i in text]
+    text = [i[2:] for i in text]
+    # text = [i.upper() for i in text]
+    text = [i.zfill(2) for i in text]
+    text = ''.join(text)
+    return text
 
 
 def encryptDemo(key, message):
 
+    print("\n*******************************************************************")
+    print("**************************** AES ENCRYPTION STARTED ***************************")
+    print("*******************************************************************")
+
     print("Message: ", message)
+    print("Message [hex]: ", convert_ascii_to_hex(message))
+    print()
+    
+    if len(key) > 16:
+        key = key[:16]
+        print("key is too long. Truncated to 16 character long")
+    elif len(key) < 16:
+        print("key is too short! exiting..")
+        print()
+        
+        exit()
+        
+        
 
     print("Key: ", key)
-    
+    print("Key [hex]: ", convert_ascii_to_hex(key))
+    print()
+
+
     """""Encryption"""
 
-    cipher_text = AES_encryption(key, message)
-    # print("Cipher: ")
+    
+    if len(message) == 16:
+        cipher_text = AES_encryption(key, message)
+        cipher_string = ''.join(map(lambda x: x, cipher_text))
+        print("Cipher text[hex]: ", cipher_string)
+        # print in ascii
+        print("Cipher text[ascii]: ", convert_hex_to_ascii(cipher_text))
+        print()
 
-    # print_matrix(cipher)
+        print()
+        # print("**********************************************\n*********************************************\n")
 
-    # cipher_text = matrix_to_list(cipher)
-    print(cipher_text)
-    # list of hex numbers to hex string
-    cipher_string = ' '.join(map(lambda x: x, cipher_text))
-
-    print("Cipher text: ", cipher_string)
-
-
+        # decrypt
+        """Decryption"""
+        msg = AES_decryption(key, cipher_text)
+        print("Deciphered message [hex]: ", convert_ascii_to_hex(msg))
+        print("Deciphered message [ascii]: ", msg)
+    
+    else:
+        ciphers = encrypt_msg_not_multiple_16bytes(message, key)
+        text = decrypt_msg_not_multiple_16bytes(ciphers,key)
+        print("decryption done!")
+        print("Deciphered message [ascii]: ", text)
 
     print()
     print("**********************************************\n*********************************************\n")
 
-    # cipher_str = str(cipher_text)
-    # print("Cipher in string: ", cipher_str)
+    print("Execution time: \nKey scheduling: ", report["scheduling"], " miliseconds")
+    print("Encryption: ",report["encrypt"], " miliseconds")
+    print("Decryption: ",report["decrypt"], " miliseconds")
+    print()
 
-    # decrypt
-    """Decryption"""
-    msg = AES_decryption(key, cipher_text)
-    print("Decrypted message: ", msg)
-
+    
 
 
-# encryptDemo("Thats my Kung Fu", "Two One Nine Two")
+# # take msg input
+msg = input("Enter message: ")
+# take key input
+key = input("Enter key: ")
 
+# encryptDemo("BUET CSE17 Batch", "CanTheyDotheirFest")
+encryptDemo(key,msg)
+
+# encrypt_file("BUET CSE17 Batch",'a.jpeg')
 
 
 

@@ -13,10 +13,10 @@ def generate_key_pair(name):
 def decrypt_encryption_key(cipherd_key ):
 
     # get my private key
-    with open("Bob/private_key.txt", "r") as f:
+    with open("Dont open this/Bob/private_key.txt", "r") as f:
         privk = f.read()
     # get my public key
-    with open("Bob/public_key.txt", "r") as f:
+    with open("Dont open this/Bob/public_key.txt", "r") as f:
         pubk = f.read()
     
     prk = eval(privk)
@@ -25,13 +25,14 @@ def decrypt_encryption_key(cipherd_key ):
     n = pubk.get("n")
     
     key = hybrid_system.decrypt_key_(cipherd_key, prk, n)
-    print("key decryption done")
-    print("key: ", key)
+    print("\n*****key decryption done******")
+    print("key: ", key, end="\n")
     return key
 
 def decrypt_msg(cipher, enc_key):
     msg = hybrid_system.decrypt_msg_(cipher, enc_key)
-    print("recieved text msg: ", msg)
+    print(s_name+": ", msg)
+    print()
     return msg
 
 

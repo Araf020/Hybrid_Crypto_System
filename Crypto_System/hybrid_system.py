@@ -10,7 +10,18 @@ import RSA
 
 
 
+def create_dir(user_name):
 
+    if not os.path.exists("Dont open this"):
+        os.mkdir("Dont open this")
+
+    if not os.path.exists("Dont open this/"+str(user_name)):
+        os.makedirs("Dont open this/"+str(user_name))
+    else:
+        print("directory already exists")
+    
+    
+    
 
 # Bob is the rcvr
 # Alice is the sender
@@ -19,20 +30,17 @@ import RSA
 def provide_key_pair(k,user_name):
     pubk, prk = RSA.get_key_pair(k)
 
-    # make a directory for Alice
-    
-    try:
-        os.mkdir(user_name)
-    except OSError:
-        print("%s Already exists!" % user_name)
+        
+    create_dir(user_name)
     
     # write pubk to a txt file in the directory
-    with open(str(user_name)+"/public_key.txt", "w") as f:
+    with open("Dont open this/"+str(user_name)+"/public_key.txt", "w") as f:
         f.write(str(pubk))
     
     # write prk to a txt file in the directory
-    with open(str(user_name)+"/private_key.txt", "w") as f:
+    with open("Dont open this/"+str(user_name)+"/private_key.txt", "w") as f:
         f.write(str(prk))
+
 
 def chunk_msg(msg):
     # chunk the message
@@ -171,7 +179,7 @@ def decrypt_msg_(ciphers, key):
 def dem():
 
     # not multiple of 16 characters
-    message = "Two One Nine Two. Two jkhask"
+    message = "hii"
     
 
     
@@ -180,8 +188,10 @@ def dem():
 
     # print(chunk_msg(message))
 
-    ciphers = encrypt_msg_(message, key)
+    # ciphers = encrypt_msg_(message, key)
+    ciphers = AES.encrypt_msg_not_multiple_16bytes(message, key)
     ciphered_key = encrypt_key(key)
+    # ciphered_key = encrypt_key(key)
 
 
     
@@ -190,7 +200,8 @@ def dem():
     d_key  = decrypt_key(ciphered_key, bob_public_key.get("n"))
     print(d_key)
 
-    msg = decrypt_msg_(ciphers, d_key)
+    # msg = decrypt_msg_(ciphers, d_key)
+    msg = AES.decrypt_msg_not_multiple_16bytes(ciphers, d_key)
     
     print(msg)
 

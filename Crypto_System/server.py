@@ -21,7 +21,7 @@ def encrypt_msg(message):
     """as we are sending to bob, we need to get his public key"""
     # read it from Bob/public_key.txt
     
-    with open("Bob/public_key.txt", "r") as f:
+    with open("Dont open this/Bob/public_key.txt", "r") as f:
         pubk = f.read()
 
     # convert it to dictionary
