@@ -15,15 +15,15 @@ first_primes_list = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
 					307, 311, 313, 317, 331, 337, 347, 349]
 
 
-def nBitRandom(n):
+def n_bit_random(n):
 	return random.randrange(2**(n-1)+1, 2**n - 1)
 
-def getLowLevelPrime(n):
+def get_low_level_prime(n):
 	'''Generate a prime candidate divisible
 	by first primes'''
 	while True:
 		# Obtain a random number
-		pc = nBitRandom(n)
+		pc = n_bit_random(n)
 
 		# Test divisibility by pre-generated
 		# primes
@@ -59,10 +59,11 @@ def miller_rabin_test(mrc):
 			return False
 	return True
 
+
 def generate_nbit_prime(n):
     while True:
         
-        prime_candidate = getLowLevelPrime(n)
+        prime_candidate = get_low_level_prime(n)
         if not miller_rabin_test(prime_candidate):
             continue
         else:

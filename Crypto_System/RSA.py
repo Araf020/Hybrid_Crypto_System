@@ -1,83 +1,10 @@
 # RSA encryption
 
 import prime
-from Crypto.Util import number
+import time
+# from Crypto.Util import number
 
-# python library to generate prime
-# print hello
-
-
-
-
-# generate a number of given bit size
-# def generate_number(k):
-#     return random.getrandbits(k)
-
-# find modulus of exponent
-# It returns (x^y) % p
-
-
-
-
-# def miillerTest(d, n):
-     
-#     # Pick a random number in [2..n-2]
-#     # Corner cases make sure that n > 4
-#     a = 2 + random.randint(1, n - 4)
  
-#     # Compute a^d % n
-#     x = pow(a, d, n)
- 
-#     if (x == 1 or x == n - 1):
-#         return True
- 
-#     # Keep squaring x while one
-#     # of the following doesn't
-#     # happen
-#     # (i) d does not reach n-1
-#     # (ii) (x^2) % n is not 1
-#     # (iii) (x^2) % n is not n-1
-#     while (d != n - 1):
-#         x = (x * x) % n
-#         d *= 2
- 
-#         if (x == 1):
-#             return False
-#         if (x == n - 1):
-#             return True
- 
-#     # Return composite
-#     return False
-
-# def isPrime( n, k):
-     
-#     # Corner cases
-#     if (n <= 1 or n == 4):
-#         return False
-#     if (n <= 3):
-#         return True
- 
-#     # Find r such that n =
-#     # 2^d * r + 1 for some r >= 1
-#     d = n - 1
-#     while (d % 2 == 0):
-#         d //= 2
- 
-#     # Iterate given number of 'k' times
-#     for i in range(k):
-#         if (miillerTest(d, n) == False):
-#             return False
- 
-#     return True
-
-# def generate_prime(bits, iterations):
-#     prime=None
-#     while True:
-#         num = generate_number(int(bits))
-#         # print(num)
-#         if (isPrime(num, iterations)):
-#             return num
-    
 
 
 def phi(p,q):
@@ -176,8 +103,38 @@ def RSA_decrypt(cipher, private_key,n):
         msg.append(chr(m))
         msg_1.append(m)
     
-    print("msg1: ",msg_1)
+    # print("msg1: ",msg_1)
     return ''.join(msg)
+
+
+def make_report(report,k):
+    with open("rsa_report.csv", "w") as f:
+        # make it look like a table
+        # make the rows
+        # 
+        # f.write("k,key generation time,encryption time,decryption time\n") 
+        f.write("K,")
+        for i in k:
+            f.write(str(i) + ",")
+        f.write("\n")
+        
+        # make the columns
+        f.write("Key-Generation,")
+        for i in k:
+            f.write(str(report[i]['key_gen']) + ",")
+        f.write("\n")
+        f.write("Encryption,")
+        for i in k:
+            f.write(str(report[i]['encrypt']) + ",")
+        f.write("\n")
+        f.write("Decryption,")
+        for i in k:
+            f.write(str(report[i]['decrypt']) + ",")
+        f.write("\n")
+        f.write("\n")
+        f.write("\n")
+    
+    
 
 
 
@@ -185,35 +142,64 @@ def demo():
     """INPUTS"""
 
     """Number of bits"""
-    k =  128
+    k =  [16,32,64,128]
     print("for k: ",k)
 
 
-    """ iterations"""
-    # iterations = 100
+    """OUTPUTS"""
+
+
+   
     message = input("Enter the message: ")
 
-    # encryption
-    public_key, private_key = get_key_pair(k)
+    report = {16:{'key_gen':0,'encrypt':0,'decrypt':0},32:{'key_gen':0,'encrypt':0,'decrypt':0},64:{'key_gen':0,'encrypt':0,'decrypt':0},128:{'key_gen':0,'encrypt':0,'decrypt':0}}
 
-    msg_ascii = []
-    for i in range(len(message)):
-        msg_ascii.append(ord(message[i]))
+    """Let the encryption begin"""
+    for bits in k:
 
-    print("msg_ascii: ",msg_ascii)
+    # measureing the time taken to generate the key pair
+        print("For k: ", bits)
 
-    cipher = RSA_encrypt(message, public_key)
-    print("Encrypted message: ", cipher)
+        start_time = time.time()
+        public_key, private_key = get_key_pair(bits)
+        key_gen_time = time.time() - start_time
 
-    # decryption
-    text = RSA_decrypt(cipher, private_key,public_key.get("n"))
+        # convert it to microseconds
+        report[bits]['key_gen'] = (key_gen_time * 1000000).__round__(4)
+
+        # measureing the time taken to encrypt the message
+        start_time = time.time()
+        cipher = RSA_encrypt(message, public_key)
+        encryption_time = time.time() - start_time
+        # convert it to microseconds
+        report[bits]['encrypt'] = (encryption_time * 1000000).__round__(4)
+        
 
 
-    cipher = ''.join(str(e) for e in cipher)
+        print("Encrypted message: ", cipher)
 
-    print("Encrypted message: ", cipher)
-    print("original message: ", message)
-    print("Decrypted message: ", text)
+        # decryption
+
+        # measureing the time taken to decrypt the message
+        start_time = time.time()
+        text = RSA_decrypt(cipher, private_key,public_key.get("n"))
+        decryption_time = time.time() - start_time
+
+        # convert it to microseconds and round it to 4 decimal places
+
+        report[bits]['decrypt'] = (decryption_time * 1000000).__round__(4)
+
+
+        cipher = ''.join(hex(e) for e in cipher)
+
+        print("Encrypted message in hex: ", cipher)
+        print("original message: ", message)
+        print("Decrypted message: ", text)
+    
+    print("Report: ",report)
+    # write the report to a file 
+    make_report(report,k)
+
 
 
 # demo()

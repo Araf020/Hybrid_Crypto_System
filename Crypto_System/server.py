@@ -56,7 +56,6 @@ def encrypt_msg(message):
 
 def start_server():
     
-    print("\nWelcome to Chat Room\n")
     print("Initialising....\n")
     time.sleep(1)
 
@@ -92,8 +91,7 @@ def start_server():
         
         msg, key = encrypt_msg(message)
 
-        
-
+    
         dic = {"msg": msg, "key": key}
         
         if message == "[e]":
