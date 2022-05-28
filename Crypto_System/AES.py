@@ -380,8 +380,10 @@ def AES_encryption(key, message):
 
     # in column order 
     # key_mat = str_to_bitevector_matrix(key)
-    m_mat = str_to_bitevector_matrix(message)
-
+    if isinstance(message, str):
+        m_mat = str_to_bitevector_matrix(message)
+    else:
+        m_mat = message
     # measure time for generating round keys
     start_time = time.time()
     round_keys = get_list_of_roundKeys(key)
@@ -564,26 +566,49 @@ def chunk_msg(msg):
     msg_chunks = []
     for i in range(0, len(msg), 16):
         msg_chunks.append(msg[i:i+16])
+    
+
     return msg_chunks
 
 
-def encrypt_file(key, filename):
-    # convert it to bytes
-    # file could be in any encoding
-    with open(filename, 'rb') as f:
-        plaintext = f.read()
-    # print("Original message: ", plaintext)
-    # pad it to a multiple of 16 bytes
-    plaintext = pad(plaintext)
-    # print("Padded message: ", plaintext)
-    # encrypt it
-    ciphers = encrypt_msg_not_multiple_16bytes(plaintext, key)
-    file = decrypt_msg_not_multiple_16bytes(ciphers, key)
 
+def get_chunks_of_file(imgfile):
+    # read byte by byte
+    with open(imgfile, 'rb') as f:
+        file_bytes = f.read()
+    
+    # chunk it
+    # p_bytes = pad(file_bytes)
+
+    chunks = chunk_msg(file_bytes)
+    print("Number of chunks: ", len(chunks))
+    return chunks
+
+
+
+def encrypt_file(key, file):
+
+    fchunks =  get_chunks_of_file(file)
+    l = len(fchunks)
+    print("last of chunks: ", fchunks[l-1])
+    print("len of last of chunks: ", len(fchunks[l-1]))
+    print("last element of chunks: ", hex(fchunks[l-1][-1]))
+    
+    # ch = convert_hex_to_ascii(fchunks[l-1])
+    
+    # convert this list of chunk to a string
+    # chunk1 = ''.join(fchunks[l-1])
     
 
 
+    ciphers = []
+
+    # for chunk in fchunks:
+    #     ciphers.append(AES_encryption(key, chunk))
     
+    # return ciphers
+
+
 
 
 
@@ -617,7 +642,15 @@ def convert_hex_to_ascii(list_hex):
     ascii_v = ''.join(ascii_v)
     return ascii_v
 
+def convert_hex_list_to_ascii(list_hex):
+    
+    ascii_v = [convert_hex_to_ascii(i) for i in list_hex]
+    ascii_v = ''.join(ascii_v)
+    return ascii_v
 
+def convert_hex_list_to_hexstr(list_hex):
+   l = [''.join(map(lambda x: x, hexes)) for hexes in list_hex]
+   return ''.join(l)
 
 def convert_ascii_to_hex(text):
     text = list(text)
@@ -678,9 +711,18 @@ def encryptDemo(key, message):
     else:
         ciphers = encrypt_msg_not_multiple_16bytes(message, key)
         text = decrypt_msg_not_multiple_16bytes(ciphers,key)
-        print("decryption done!")
-        print("Deciphered message [ascii]: ", text)
 
+        print("Cipher text[hex]: ", convert_hex_list_to_hexstr(ciphers))
+        # print in ascii
+        print("Cipher text[ascii]: ", convert_hex_list_to_ascii(ciphers))
+
+        print("Deciphered message [hex]: ", convert_ascii_to_hex(text))
+        print("Deciphered message [ascii]: ", text)
+        print("original message was: ", message)
+        if message == text:
+            print("Decryption successful!")
+
+       
     print()
     print("**********************************************\n*********************************************\n")
 
@@ -692,15 +734,20 @@ def encryptDemo(key, message):
     
 
 
-# # take msg input
-msg = input("Enter message: ")
-# take key input
-key = input("Enter key: ")
+# take msg input
+# msg = input("Enter message: ")
+# # take key input
+# key = input("Enter key: ")
 
-# encryptDemo("BUET CSE17 Batch", "CanTheyDotheirFest")
-encryptDemo(key,msg)
+encryptDemo("BUET CSE17 Batch", "CanTheyDotheirFest")
+# encryptDemo(key,msg)
 
+
+
+
+# ====================================================================
 # encrypt_file("BUET CSE17 Batch",'a.jpeg')
+# fciphers  = encrypt_file("BUET CSE17 Batch",'a.jpeg')
 
 
 

@@ -1,7 +1,7 @@
 # implemenatation of AES
 from unittest import result
 from BitVector import *
-from AEs_git import decrypt, encrypt
+# from AEs_git import decrypt, encrypt
 from util import key_expansion
 
 Sbox = (
